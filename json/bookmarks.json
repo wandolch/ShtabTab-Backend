@@ -1,0 +1,46 @@
+[
+  {
+    "id": 0,
+    "name": "Основное",
+    "bookmarks": [
+      {
+        "title": "ТЕМА ЖЖ",
+        "image": "tema.png",
+        "link": "http://tema.livejournal.com/",
+        "color": "#013040",
+        "id": 0,
+        "frequency": 2
+      },
+      {
+        "title": "ОРОРО ТВ",
+        "image": "ororo.png",
+        "link": "https://ororo.tv/ru",
+        "color": "#222131",
+        "id": 1,
+        "frequency": 1
+      },
+      {
+        "title": "Беханс",
+        "image": "behance.png",
+        "link": "https://www.behance.net/",
+        "color": "#0057ff",
+        "id": 2,
+        "frequency": 3
+      }
+    ]
+  },
+  {
+    "id": 1,
+    "name": "Сервисы",
+    "bookmarks": [
+      {
+        "title": "Trello",
+        "image": "trello.png",
+        "link": "https://trello.com/",
+        "color": "#006BA3",
+        "id": 4,
+        "frequency": 1
+      }
+    ]
+  }
+]
