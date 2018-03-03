@@ -1,7 +1,7 @@
 [
   {
     "title": "ОРОРО ТВ",
-    "image": "http://localhost:8080/static/img/ororo.png",
+    "image": "http://localhost:8080/img/ororo.png",
     "link": "https://ororo.tv/ru",
     "rgb": [
       34,
@@ -14,7 +14,7 @@
   },
   {
     "title": "Медиум",
-    "image": "http://localhost:8080/static/img/medium.png",
+    "image": "http://localhost:8080/img/medium.png",
     "link": "https://medium.com/",
     "rgb": [
       91,
@@ -27,7 +27,7 @@
   },
   {
     "title": "Беханс",
-    "image": "http://localhost:8080/static/img/behance.png",
+    "image": "http://localhost:8080/img/behance.png",
     "link": "https://www.behance.net/",
     "rgb": [
       0,
@@ -40,7 +40,7 @@
   },
   {
     "title": "Google Translate Has Big Name",
-    "image": "http://localhost:8080/static/img/google.png",
+    "image": "http://localhost:8080/img/google.png",
     "link": "https://translate.google.ru/",
     "rgb": [
       63,
@@ -53,7 +53,7 @@
   },
   {
     "title": "ТЕМА ЖЖ",
-    "image": "http://localhost:8080/static/img/tema.png",
+    "image": "http://localhost:8080/img/tema.png",
     "link": "http://tema.livejournal.com/",
     "rgb": [
       1,
@@ -66,7 +66,7 @@
   },
   {
     "title": "Хабр",
-    "image": "http://localhost:8080/static/img/habr.png",
+    "image": "http://localhost:8080/img/habr.png",
     "link": "https://habrahabr.ru",
     "rgb": [
       101,
