@@ -2,16 +2,25 @@
   "name": "shtab-tab-backend",
   "version": "1.0.0",
   "main": "index.js",
+  "scripts": {
+    "start": "export DEV=true && nodemon app.js",
+    "prod": "forever start -l forever.log -o out.log -e err.log -a app.js",
+    "stop": "forever stopall",
+    "dropDB": "node createDB.js"
+  },
   "dependencies": {
     "async": "^2.6.0",
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
     "express": "^4.16.2",
     "mongoose": "^5.0.6",
+    "morgan": "^1.9.0",
     "puppeteer": "^1.0.0"
   },
   "devDependencies": {
     "eslint": "^4.12.1",
-    "eslint-plugin-node": "^5.2.1"
+    "eslint-plugin-node": "^5.2.1",
+    "forever": "^0.15.3",
+    "nodemon": "^1.17.1"
   }
 }

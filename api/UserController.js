@@ -6,7 +6,6 @@ class UserController {
   static signIn(req, res) {
     const User = mongoose.models.User;
     const token = req.body.token;
-
     TransportService.get(`https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=${token}`)
       .then((data) => {
         const googleUser = JSON.parse(data.toString('utf8'));
@@ -15,14 +14,14 @@ class UserController {
         User.findOne({hash}, (err, user) => {
           if (err) {
             //TODO error
-            return res.status(500).send({err, message: 'findOne error'});
+            return res.status(500).json({err, message: 'findOne error'});
           }
           if (user) {
-            return res.status(200).send(user);
+            return res.json(user);
           } else {
             const userData = {
               picture: googleUser.picture,
-              name: `${googleUser.given_name} ${googleUser.family_name}`,
+              name: googleUser.name,
               email: googleUser.email,
               created: Date.now(),
               hash
@@ -31,16 +30,16 @@ class UserController {
             newUser.save((err) => {
               if (err) {
                 //TODO error
-                return res.status(500).send({err, message: 'save error'});
+                return res.status(500).json({err, message: 'save error'});
               }
-              return res.status(200).send(userData);
+              return res.json(userData);
             })
           }
         });
       })
       .catch((err) => {
         //TODO error
-        return res.status(500).send({err, message: 'token error'});
+        return res.status(500).json({err, message: 'token error'});
       });
   }
 }

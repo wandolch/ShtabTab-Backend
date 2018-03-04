@@ -2,6 +2,7 @@
 const express = require('express');
 const puppeteer = require('puppeteer');
 const app = express();
+const morgan = require("morgan");
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const apiRouter = require('./api');
@@ -9,11 +10,12 @@ const corsOptions = require('./constants/corsOptions');
 const serverConfig = require('./constants/serverConfig');
 require('./models').createModels();
 
+app.use(morgan(process.env.DEV ? 'dev' : 'combined'));
 app.use(cors(corsOptions));
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: true
 }));
-app.use(bodyParser.json());
 
 app.use('/api', apiRouter);
 app.use('/public', express.static(__dirname + '/public'));

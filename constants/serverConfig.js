@@ -1,7 +1,7 @@
 module.exports = {
-  port: 8080,
+  port: process.env.DEV ? 8080: 80,
   mongoose: {
-    uri: "mongodb://localhost:32768/shtabTab",
+    uri: `mongodb://localhost:${process.env.DB_PORT || 32768}/shtabTab`,
     options: {
       keepAlive: 1
     }
