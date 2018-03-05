@@ -1,21 +1,17 @@
 const mongoose = require('../libs/mongooseConnector');
 
-module.exports.createUser = () => {
+module.exports.createCollection = () => {
   const schema = new mongoose.Schema({
     _id: {
       required: true,
       type: String
     },
-    name: {
+    title: {
       type: String,
       required: true
     },
-    email: {
-      type: String,
-      required: true
-    },
-    picture: {
-      type: String,
+    index: {
+      type: Number,
       required: true
     },
     created: {
@@ -24,5 +20,5 @@ module.exports.createUser = () => {
     }
   });
 
-  mongoose.model('User', schema);
+  mongoose.model('Collection', schema);
 };

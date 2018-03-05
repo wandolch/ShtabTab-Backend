@@ -4,7 +4,7 @@ class TransportService {
       const protocol = url.startsWith('https') ? require('https') : require('http');
       const request = protocol.get(url, (response) => {
         if (response.statusCode < 200 || response.statusCode > 299) {
-          reject({message: 'Request failed status code: ' + response.statusCode});
+          reject({message: 'Something went wrong', status: 500});
         }
         const body = [];
         response.on('data', (chunk) => body.push(chunk));
@@ -12,7 +12,7 @@ class TransportService {
       });
       request.on('error', (err) => reject(err))
     })
-  };
+  }
 }
 
 module.exports = TransportService;

@@ -1,13 +1,12 @@
 const mongoose = require('../libs/mongooseConnector');
+const HttpError = require('../utils/HttpError');
 
 module.exports = (req, res, next) => {
-  mongoose.models.User.findOne({hash: req.body.hash}, (err, user) => {
-    if (err) {
-      //TODO error
-      throw new Error({err, message: 'findOne error'});
-    }
-    if (user) {
-      next();
-    }
+  req.headers.authorization || next(new HttpError(403));
+
+  const hash = req.headers.authorization.split(" ")[1];
+  mongoose.models.User.findOne({hash}, (err, user) => {
+    !err || next(err);
+    user ? next() : next(new HttpError(403));
   });
 };

@@ -3,13 +3,12 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "export DEV=true && nodemon app.js",
-    "prod": "forever start -l forever.log -o out.log -e err.log -a app.js",
+    "start": "nodemon app.js",
+    "prod": "export NODE_ENV=production forever start -l forever.log -o out.log -e err.log -a app.js",
     "stop": "forever stopall",
-    "dropDB": "node createDB.js"
+    "dropDB": "node dropDB.js"
   },
   "dependencies": {
-    "async": "^2.6.0",
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
     "express": "^4.16.2",
