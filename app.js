@@ -45,7 +45,8 @@ app.listen(serverConfig.port, '127.0.0.1', () => {
 //     isLandscape: true
 //   });
 //   await page.goto('https://www.behance.net/');
-//   await page.keyboard.type('', {delay: 1500});
+//   await page.keyboard.type(' ', {delay: 1000});
 //   await page.screenshot({path: 'public/img/behance.png', clip: {x: 0, y: 0, width: 1366, height: 170}});
 //   await browser.close();
+//   console.log('done');
 // })();

@@ -1,12 +1,16 @@
-const mongoose = require('../libs/mongooseConnector');
 const HttpError = require('../utils/HttpError');
+const jwt = require('jsonwebtoken');
 
 module.exports = (req, res, next) => {
-  req.headers.authorization || next(new HttpError(403));
+  if (!req.headers.authorization) {
+    return next(new HttpError(401));
+  }
 
-  const hash = req.headers.authorization.split(" ")[1];
-  mongoose.models.User.findOne({hash}, (err, user) => {
-    !err || next(err);
-    user ? next() : next(new HttpError(403));
-  });
+  try {
+    const token = req.headers.authorization.split(" ")[1];
+    req.userData = jwt.verify(token, process.env.JWT_KEY);
+    next();
+  } catch (err) {
+    next(new HttpError(401))
+  }
 };

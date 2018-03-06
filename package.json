@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon app.js",
+    "start": "export JWT_KEY=example && nodemon app.js",
     "prod": "export NODE_ENV=production forever start -l forever.log -o out.log -e err.log -a app.js",
     "stop": "forever stopall",
     "dropDB": "node dropDB.js"
@@ -12,6 +12,7 @@
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
     "express": "^4.16.2",
+    "jsonwebtoken": "^8.2.0",
     "mongoose": "^5.0.6",
     "morgan": "^1.9.0",
     "puppeteer": "^1.0.0"
