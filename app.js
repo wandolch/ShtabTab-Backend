@@ -7,7 +7,7 @@ const cors = require('cors');
 const apiRouter = require('./api');
 const corsOptions = require('./constants/corsOptions');
 const serverConfig = require('./constants/serverConfig');
-require('./models').createModels();
+require('./libs/mongooseConnector');
 
 app.use(morgan(process.env.DEV ? 'dev' : 'combined'));
 app.use(cors(corsOptions));
@@ -34,19 +34,3 @@ app.use((error, req, res, next) => { // eslint-disable-line
 app.listen(serverConfig.port, '127.0.0.1', () => {
   console.log('We are live on ' + serverConfig.port);
 });
-
-// const puppeteer = require('puppeteer');
-// (async () => {
-//   const browser = await puppeteer.launch();
-//   const page = await browser.newPage();
-//   page.setViewport({
-//     width: 1366,
-//     height: 768,
-//     isLandscape: true
-//   });
-//   await page.goto('https://www.behance.net/');
-//   await page.keyboard.type(' ', {delay: 1000});
-//   await page.screenshot({path: 'public/img/behance.png', clip: {x: 0, y: 0, width: 1366, height: 170}});
-//   await browser.close();
-//   console.log('done');
-// })();

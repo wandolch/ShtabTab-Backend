@@ -6,21 +6,26 @@
     "start": "export JWT_KEY=example && nodemon app.js",
     "prod": "export NODE_ENV=production forever start -l forever.log -o out.log -e err.log -a app.js",
     "stop": "forever stopall",
-    "dropDB": "node dropDB.js"
+    "dropDB": "sure --question 'Type drop to continue.' --yes 'drop' && node dropDB.js"
   },
   "dependencies": {
+    "@meanie/mongoose-to-json": "^2.2.0",
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
     "express": "^4.16.2",
+    "get-image-colors": "^1.8.1",
     "jsonwebtoken": "^8.2.0",
     "mongoose": "^5.0.6",
+    "mongoose-unique-validator": "^2.0.0",
     "morgan": "^1.9.0",
-    "puppeteer": "^1.0.0"
+    "puppeteer": "^1.0.0",
+    "shortid": "^2.2.8"
   },
   "devDependencies": {
     "eslint": "^4.12.1",
     "eslint-plugin-node": "^5.2.1",
     "forever": "^0.15.3",
-    "nodemon": "^1.17.1"
+    "nodemon": "^1.17.1",
+    "sure": "^0.0.3"
   }
 }

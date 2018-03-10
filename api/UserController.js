@@ -1,4 +1,4 @@
-const mongoose = require('../libs/mongooseConnector');
+const mongoose = require('mongoose');
 const TransportService = require('../utils/TransportService');
 const HttpError = require('../utils/HttpError');
 const jwt = require('jsonwebtoken');
@@ -9,16 +9,21 @@ class UserController {
     try {
       const data = await TransportService.get(`https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=${req.body.token}`);
       const googleUser = JSON.parse(data.toString('utf8'));
-      const user = {
+      const userData = {
         picture: googleUser.picture,
-        name: googleUser.name,
-        email: googleUser.email,
-        _id: googleUser.sub
+        givenName: googleUser.given_name,
+        familyName: googleUser.family_name,
+        fullName: googleUser.name,
+        email: googleUser.email
       };
-      const token = jwt.sign(user, process.env.JWT_KEY);
-      if (await User.findById(googleUser.sub)) return res.json(Object.assign(user, {token}));
-      await new User(user).save();
-      return res.json(Object.assign(user, {token}));
+      let user = await User.findOne({email: userData.email});
+      if (user) {
+        const token = jwt.sign(user.toJSON(), process.env.JWT_KEY);
+        return res.json(Object.assign(user.toJSON(), {token}));
+      }
+      user = await new User(userData).save();
+      const token = jwt.sign(user.toJSON(), process.env.JWT_KEY);
+      return res.json(Object.assign(user.toJSON(), {token}));
     } catch(err) {
       next(new HttpError(500, err.message))
     }

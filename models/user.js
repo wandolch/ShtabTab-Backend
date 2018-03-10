@@ -1,18 +1,29 @@
-const mongoose = require('../libs/mongooseConnector');
+const mongoose = require('mongoose');
+const shortId = require('shortid');
 
 module.exports.createUser = () => {
   const schema = new mongoose.Schema({
-    _id: {
-      required: true,
-      type: String
+    id: {
+      type: String,
+      default: shortId.generate,
+      unique: true
     },
-    name: {
+    givenName: {
+      type: String,
+      required: true
+    },
+    familyName: {
+      type: String,
+      required: true
+    },
+    fullName: {
       type: String,
       required: true
     },
     email: {
       type: String,
-      required: true
+      required: true,
+      unique: true
     },
     picture: {
       type: String,

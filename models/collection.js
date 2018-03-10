@@ -1,10 +1,11 @@
-const mongoose = require('../libs/mongooseConnector');
+const mongoose = require('mongoose');
+const shortId = require('shortid');
 
 module.exports.createCollection = () => {
   const schema = new mongoose.Schema({
-    _id: {
-      required: true,
-      type: String
+    id: {
+      type: String,
+      default: shortId.generate
     },
     title: {
       type: String,
@@ -17,7 +18,12 @@ module.exports.createCollection = () => {
     created: {
       type: Date,
       default: Date.now
-    }
+    },
+    creatorId: {
+      type: String,
+      ref: 'User',
+      required: true
+    },
   });
 
   mongoose.model('Collection', schema);

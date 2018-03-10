@@ -1,22 +1,14 @@
 "use strict";
 const router = require('express').Router();
 const UserController = require('./UserController');
+const CollectionController = require('./CollectionController');
+const BookmarkController = require('./BookmarkController');
 const userAccess = require('../middlewares/userAccess');
 
-router.post('/signIn', UserController.signIn);
-router.get('/collections', userAccess, (req, res)=>{
-  const arr = require('../json/collections.json');
-  res.json(arr);
-});
+router.post('/sign-in', UserController.signIn);
+router.get('/collection', userAccess, CollectionController.getCollections);
 
-router.get('/bookmarks/0', userAccess, (req, res) => {
-  const arr = require('../json/bookmarks0.json');
-  res.json(arr);
-});
-
-router.get('/bookmarks/1', userAccess, (req, res) => {
-  const arr = require('../json/bookmarks1.json');
-  res.json(arr);
-});
+router.get('/collection/:id', userAccess, CollectionController.getCollectionById);
+router.post('/collection/:id/bookmark', userAccess, BookmarkController.createBookmarkByCollectionId);
 
 module.exports = router;
