@@ -11,6 +11,10 @@ module.exports.createCollection = () => {
       type: String,
       required: true
     },
+    hostName: {
+      type: String,
+      required: true
+    },
     index: {
       type: Number,
       required: true
@@ -34,8 +38,7 @@ module.exports.createCollection = () => {
       required: true
     },
     picture: {
-      type: String,
-      required: true
+      type: String
     },
     link: {
       type: String,

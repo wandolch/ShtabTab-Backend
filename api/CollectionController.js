@@ -7,12 +7,13 @@ class CollectionController {
     try {
       const collections = await Collection
         .find({creatorId: req.userData.id})
+        .sort('index')
         .exec();
       if (collections && collections.length) {
         return res.json(collections);
       }
       const defaultCollection = await new Collection({
-        title: 'Main',
+        title: 'General',
         index: 0,
         creatorId: req.userData.id,
       }).save();
@@ -34,6 +35,7 @@ class CollectionController {
       }
       const bookmarks = await Bookmark
         .find({collectionId})
+        .sort('index')
         .exec();
       return res.json(bookmarks);
     } catch(err) {

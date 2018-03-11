@@ -1,5 +1,6 @@
 "use strict";
-const router = require('express').Router();
+const express = require('express');
+const router = express.Router();
 const UserController = require('./UserController');
 const CollectionController = require('./CollectionController');
 const BookmarkController = require('./BookmarkController');
