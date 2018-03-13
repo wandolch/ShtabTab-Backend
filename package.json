@@ -13,11 +13,11 @@
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
     "express": "^4.16.2",
-    "get-image-colors": "^1.8.1",
     "jsonwebtoken": "^8.2.0",
     "mongoose": "^5.0.6",
     "mongoose-unique-validator": "^2.0.0",
     "morgan": "^1.9.0",
+    "node-vibrant": "^3.0.0",
     "puppeteer": "^1.0.0",
     "shortid": "^2.2.8"
   },

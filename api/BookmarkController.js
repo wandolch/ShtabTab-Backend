@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const HttpError = require('../utils/HttpError');
 const puppeteer = require('puppeteer');
-const getColors = require('get-image-colors');
+const Vibrant = require('node-vibrant');
 
 class BookmarkController {
   static async createBookmarkByCollectionId(req, res, next) {
@@ -24,7 +24,8 @@ class BookmarkController {
         creatorId: req.userData.id,
         link: req.body.link,
         index: bookmarksInCollection.length,
-        hostName: extractHostname(req.body.link)
+        hostName: extractHostname(req.body.link),
+        frequency: randomInteger(0, 2)
       });
       bookmark.picture = `public/img/${bookmark.id}.png`;
       const browser = await puppeteer.launch();
@@ -46,12 +47,26 @@ class BookmarkController {
         bookmark.picture = null;
       }
       browser.close();
+      const vibrantOpt = {
+        colorCount: 10,
+        filters: [(r, g, b) => (r + g + b) < 665]
+      };
+      let palette = await new Vibrant(`http://www.google.com/s2/favicons?domain=${bookmark.link}`, vibrantOpt).getPalette();
+      bookmark.rgb = getVibrantColor(palette);
+      if (!bookmark.rgb && bookmark.picture) {
+        palette = await new Vibrant(bookmark.picture, vibrantOpt).getPalette();
+        bookmark.rgb = getVibrantColor(palette);
+      }
+      if (!bookmark.rgb) {
+        bookmark.rgb = [3, 169, 255]; // TODO make many default colors
+      } else {
+        let i = 0;
+        while(i < bookmark.rgb.length){
+          bookmark.rgb[i] = Math.round(bookmark.rgb[i]);
+          i++
+        }
+      }
 
-      let colors = await getColors(`http://www.google.com/s2/favicons?domain=${bookmark.link}`);
-      colors = colors.filter(color => {
-        return (color._rgb[0] + color._rgb[1] + color._rgb[2]) < 665
-      });
-      bookmark.rgb = colors[0]._rgb.slice(0, 3);
       await bookmark.save();
       return res.json(bookmark.toJSON());
 
@@ -59,6 +74,23 @@ class BookmarkController {
       next(new HttpError(500, err.message))
     }
   }
+}
+
+function getVibrantColor(palette) {
+  if (palette.Vibrant) {
+    return palette.Vibrant._rgb;
+  } else if (palette.DarkVibrant) {
+    return palette.DarkVibrant._rgb;
+  } else if (palette.LightVibrant) {
+    return palette.LightVibrant._rgb;
+  }
+  return null;
+}
+
+function randomInteger(min, max) {
+  let rand = min - 0.5 + Math.random() * (max - min + 1);
+  rand = Math.round(rand);
+  return rand;
 }
 
 function extractHostname(url) {
