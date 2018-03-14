@@ -17,7 +17,6 @@ app.use(bodyParser.urlencoded({
 }));
 
 app.use('/api', apiRouter);
-app.use('/public', express.static(__dirname + '/public'));
 
 app.use((req, res, next) => {
   const error = new Error("Not found");

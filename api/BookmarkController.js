@@ -5,14 +5,18 @@ const Vibrant = require('node-vibrant');
 
 class BookmarkController {
   static async createBookmarkByCollectionId(req, res, next) {
-    const collectionId = req.params.id;
-
     const Bookmark = mongoose.models.Bookmark;
     const Collection = mongoose.models.Collection;
+
+    const collectionId = req.params.id;
     try {
       const collection = await Collection.findOne({id: collectionId});
       if (!collection) {
         return res.status(404).json(new HttpError(404, `Collection with id ${collectionId} does not exist`));
+      }
+
+      if(collection.creatorId !== req.userData.id){
+        return res.status(403).json(new HttpError(403));
       }
 
       const bookmarksInCollection = await Bookmark
@@ -27,8 +31,8 @@ class BookmarkController {
         hostName: extractHostname(req.body.link),
         frequency: randomInteger(0, 2)
       });
-      bookmark.picture = `public/img/${bookmark.id}.png`;
       const browser = await puppeteer.launch();
+      let pictureBuffer;
       try {
         const page = await browser.newPage();
         page.setViewport({
@@ -38,13 +42,13 @@ class BookmarkController {
         });
         await page.goto(bookmark.link);
         await page.keyboard.type(' ', {delay: 1000});
-        await page.screenshot({path: bookmark.picture, clip: {x: 0, y: 0, width: 1366, height: 170}});
+        pictureBuffer = await page.screenshot({clip: {x: 0, y: 0, width: 1366, height: 170}});
+        bookmark.picture = Buffer.from(pictureBuffer).toString('base64');
         const title = await page.title();
         if (title) bookmark.title = title;
         else bookmark.title = bookmark.hostName.split('.')[0];
       } catch (err) {
         bookmark.title = bookmark.hostName.split('.')[0];
-        bookmark.picture = null;
       }
       browser.close();
       const vibrantOpt = {
@@ -53,8 +57,8 @@ class BookmarkController {
       };
       let palette = await new Vibrant(`http://www.google.com/s2/favicons?domain=${bookmark.link}`, vibrantOpt).getPalette();
       bookmark.rgb = getVibrantColor(palette);
-      if (!bookmark.rgb && bookmark.picture) {
-        palette = await new Vibrant(bookmark.picture, vibrantOpt).getPalette();
+      if (!bookmark.rgb && pictureBuffer) {
+        palette = await new Vibrant(pictureBuffer, vibrantOpt).getPalette();
         bookmark.rgb = getVibrantColor(palette);
       }
       if (!bookmark.rgb) {
@@ -71,6 +75,38 @@ class BookmarkController {
       return res.json(bookmark.toJSON());
 
     } catch (err) {
+      next(new HttpError(500, err.message))
+    }
+  }
+
+  static async deleteBookmarkById(req, res, next) {
+    const Bookmark = mongoose.models.Bookmark;
+    const bookmarkId = req.params.id;
+    try {
+      const bookmark = await Bookmark.findOne({id: bookmarkId});
+      if (!bookmark) {
+        return res.status(404).json(new HttpError(404, `Bookmark with id ${bookmarkId} does not exist`));
+      }
+      if (bookmark.creatorId !== req.userData.id) {
+        return res.status(403).json(new HttpError(403));
+      }
+      const collectionId  = bookmark.collectionId;
+      await bookmark.remove();
+
+      const conditions = { collectionId, 'index' : { $gt: bookmark.index } };
+      const update = { $inc: { index: -1 }};
+      const options = { multi: true };
+
+      await Bookmark.update(conditions, update, options);
+
+      const bookmarks = await Bookmark
+        .find({collectionId})
+        .sort('index')
+        .exec();
+
+      return res.json(bookmarks);
+
+    } catch(err){
       next(new HttpError(500, err.message))
     }
   }

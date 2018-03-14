@@ -7,9 +7,11 @@ const BookmarkController = require('./BookmarkController');
 const userAccess = require('../middlewares/userAccess');
 
 router.post('/sign-in', UserController.signIn);
-router.get('/collection', userAccess, CollectionController.getCollections);
 
+router.get('/collection', userAccess, CollectionController.getCollections);
 router.get('/collection/:id', userAccess, CollectionController.getCollectionById);
+
 router.post('/collection/:id/bookmark', userAccess, BookmarkController.createBookmarkByCollectionId);
+router.delete('/bookmark/:id', userAccess, BookmarkController.deleteBookmarkById);
 
 module.exports = router;

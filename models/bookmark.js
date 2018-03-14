@@ -38,7 +38,8 @@ module.exports.createCollection = () => {
       required: true
     },
     picture: {
-      type: String
+      type: String,
+      required: true
     },
     link: {
       type: String,
