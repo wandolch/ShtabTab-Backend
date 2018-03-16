@@ -9,6 +9,7 @@ const userAccess = require('../middlewares/userAccess');
 router.post('/sign-in', UserController.signIn);
 
 router.get('/collection', userAccess, CollectionController.getCollections);
+router.post('/collection', userAccess, CollectionController.addCollection);
 router.get('/collection/:id', userAccess, CollectionController.getCollectionById);
 
 router.post('/collection/:id/bookmark', userAccess, BookmarkController.createBookmarkByCollectionId);

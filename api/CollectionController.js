@@ -42,6 +42,21 @@ class CollectionController {
       next(new HttpError(500, err.message))
     }
   }
+
+  static async addCollection(req, res, next){
+    const Collection = mongoose.models.Collection;
+    try {
+      const allCollections = await Collection.find().exec();
+      const collection = await new Collection({
+        title: req.body.title,
+        index: allCollections.length,
+        creatorId: req.userData.id,
+      }).save();
+      return res.json([collection.toJSON()]);
+    } catch(err) {
+      next(new HttpError(500, err.message))
+    }
+  }
 }
 
 module.exports = CollectionController;

@@ -26,7 +26,7 @@ class BookmarkController {
       let bookmark = new Bookmark({
         collectionId,
         creatorId: req.userData.id,
-        link: req.body.link,
+        link: getValidLink(req.body.link),
         index: bookmarksInCollection.length,
         hostName: extractHostname(req.body.link),
         frequency: randomInteger(0, 2)
@@ -121,6 +121,10 @@ function getVibrantColor(palette) {
     return palette.LightVibrant._rgb;
   }
   return null;
+}
+
+function getValidLink(link) {
+  return link.indexOf('http') !== -1 ? link : 'http://' + link;
 }
 
 function randomInteger(min, max) {
