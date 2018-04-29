@@ -52,7 +52,7 @@ class CollectionController {
         index: allCollections.length,
         creatorId: req.userData.id,
       }).save();
-      return res.json([collection.toJSON()]);
+      return res.json(collection.toJSON());
     } catch(err) {
       next(new HttpError(500, err.message))
     }

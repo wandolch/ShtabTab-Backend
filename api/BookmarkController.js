@@ -53,7 +53,7 @@ class BookmarkController {
       browser.close();
       const vibrantOpt = {
         colorCount: 10,
-        filters: [(r, g, b) => (r + g + b) < 665]
+        //filters: [(r, g, b) => (r + g + b) < 665]
       };
       let palette = await new Vibrant(`http://www.google.com/s2/favicons?domain=${bookmark.link}`, vibrantOpt).getPalette();
       bookmark.rgb = getVibrantColor(palette);
@@ -119,6 +119,12 @@ function getVibrantColor(palette) {
     return palette.DarkVibrant._rgb;
   } else if (palette.LightVibrant) {
     return palette.LightVibrant._rgb;
+  } else if (palette.Muted) {
+    return palette.Muted._rgb;
+  } else if (palette.DarkMuted) {
+    return palette.DarkMuted._rgb;
+  } else if (palette.LightMuted) {
+    return palette.LightMuted._rgb;
   }
   return null;
 }
