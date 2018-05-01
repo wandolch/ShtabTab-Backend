@@ -10,13 +10,9 @@ class BookmarkController {
 
     const collectionId = req.params.id;
     try {
-      const collection = await Collection.findOne({id: collectionId});
+      const collection = await Collection.findOne({id: collectionId, owners: req.userData.id});
       if (!collection) {
         return res.status(404).json(new HttpError(404, `Collection with id ${collectionId} does not exist`));
-      }
-
-      if(collection.creatorId !== req.userData.id){
-        return res.status(403).json(new HttpError(403));
       }
 
       const bookmarksInCollection = await Bookmark
@@ -81,16 +77,21 @@ class BookmarkController {
 
   static async deleteBookmarkById(req, res, next) {
     const Bookmark = mongoose.models.Bookmark;
+    const Collection = mongoose.models.Collection;
     const bookmarkId = req.params.id;
     try {
       const bookmark = await Bookmark.findOne({id: bookmarkId});
       if (!bookmark) {
         return res.status(404).json(new HttpError(404, `Bookmark with id ${bookmarkId} does not exist`));
       }
-      if (bookmark.creatorId !== req.userData.id) {
+
+      const collectionId  = bookmark.collectionId;
+
+      const collection = await Collection.findOne({id: collectionId, owners: req.userData.id});
+      if (!collection) {
         return res.status(403).json(new HttpError(403));
       }
-      const collectionId  = bookmark.collectionId;
+
       await bookmark.remove();
 
       const conditions = { collectionId, 'index' : { $gt: bookmark.index } };

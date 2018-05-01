@@ -19,10 +19,13 @@ module.exports.createCollection = () => {
       type: Date,
       default: Date.now
     },
-    creatorId: {
-      type: String,
-      ref: 'User',
+    owners: {
+      type: [String],
       required: true
+    },
+    defaultStyle: {
+      type: Boolean,
+      default: true
     },
   });
 
