@@ -48,6 +48,9 @@ module.exports.createCollection = () => {
     rgb: {
       type: [Number],
       required: true
+    },
+    topics: {
+      type: [String]
     }
   });
 

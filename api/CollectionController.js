@@ -88,11 +88,33 @@ class CollectionController {
 
   static async deleteCollectionById(req, res, next) {
     const Collection = mongoose.models.Collection;
+    const Bookmark = mongoose.models.Bookmark;
+    const Topic = mongoose.models.Topic;
     const collectionId = req.params.id;
     try {
       const collection = await Collection.findOne({id: collectionId ,owners: req.userData.id});
       if (!collection) {
         return res.status(404).json(new HttpError(404, `Collection with id ${collectionId} does not exist`));
+      }
+
+      let bookmarks = await Bookmark
+        .find({collectionId: collection.id})
+        .exec();
+
+      for (let bm of bookmarks){
+        let topics = bm.topics;
+        await bm.remove();
+
+        if (topics.length){
+          for (let topic of topics) {
+            let bm = await Bookmark.findOne({topics: topic});
+            if(!bm){
+              let topicModel = await Topic.findOne({id: topic});
+              topicModel.remove()
+            }
+          }
+        }
+
       }
       await collection.remove();
     } catch(err){

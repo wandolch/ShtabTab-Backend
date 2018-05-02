@@ -2,13 +2,17 @@ const mongoose = require('mongoose');
 const HttpError = require('../utils/HttpError');
 const puppeteer = require('puppeteer');
 const Vibrant = require('node-vibrant');
+const TransportService = require('../utils/TransportService');
 
 class BookmarkController {
   static async createBookmarkByCollectionId(req, res, next) {
     const Bookmark = mongoose.models.Bookmark;
     const Collection = mongoose.models.Collection;
+    const Topic = mongoose.models.Topic;
 
     const collectionId = req.params.id;
+    let bookmark = null;
+    let megaindexPromice = null;
     try {
       const collection = await Collection.findOne({id: collectionId, owners: req.userData.id});
       if (!collection) {
@@ -19,7 +23,7 @@ class BookmarkController {
         .find({collectionId})
         .exec();
 
-      let bookmark = new Bookmark({
+      bookmark = new Bookmark({
         collectionId,
         creatorId: req.userData.id,
         link: getValidLink(req.body.link),
@@ -27,6 +31,7 @@ class BookmarkController {
         hostName: extractHostname(req.body.link),
         frequency: randomInteger(0, 2)
       });
+      megaindexPromice = TransportService.get(`http://api.megaindex.com/visrep/lda_site?key=d5caeb89efa42b0a7018d68e4b76759a&domain[]=http://${bookmark.hostName}&count=1`);
       const browser = await puppeteer.launch();
       let pictureBuffer;
       try {
@@ -61,42 +66,78 @@ class BookmarkController {
         bookmark.rgb = [3, 169, 255]; // TODO make many default colors
       } else {
         let i = 0;
-        while(i < bookmark.rgb.length){
+        while (i < bookmark.rgb.length) {
           bookmark.rgb[i] = Math.round(bookmark.rgb[i]);
           i++
         }
       }
 
       await bookmark.save();
-      return res.json(bookmark.toJSON());
+      res.json(bookmark.toJSON());
 
     } catch (err) {
-      next(new HttpError(500, err.message))
+      return next(new HttpError(500, err.message))
+    }
+    try {
+      let topics = recognize(bookmark.hostName.toLowerCase());
+      if (!topics){
+        topics = ['Other'];
+
+        let megaindexRes = JSON.parse(await megaindexPromice);
+        if (megaindexRes && megaindexRes.data && megaindexRes.data[0] && megaindexRes.data[0].topics
+          && megaindexRes.data[0].topics[0] && megaindexRes.data[0].topics[0].t) {
+          let topicsText = megaindexRes.data[0].topics[0].t.substr(1).replace('_', ' ');
+          topics = topicsText.split('/');
+          if (topics.length === 3){
+            topics.length = 2;
+          }
+        }
+      }
+
+
+      let savePromices = [];
+
+      for (let topic of topics) {
+        let similar = await Topic.findOne({id: topic});
+        if(!similar){
+          let model = new Topic({id: topic});
+          savePromices.push(model.save());
+        }
+      }
+
+      await Promise.all(savePromices);
+      bookmark.topics = topics;
+      await bookmark.save();
+    }
+    catch (err) {
+      console.log(err);
     }
   }
 
   static async deleteBookmarkById(req, res, next) {
     const Bookmark = mongoose.models.Bookmark;
     const Collection = mongoose.models.Collection;
+    const Topic = mongoose.models.Topic;
     const bookmarkId = req.params.id;
+    let topics = null;
     try {
       const bookmark = await Bookmark.findOne({id: bookmarkId});
       if (!bookmark) {
         return res.status(404).json(new HttpError(404, `Bookmark with id ${bookmarkId} does not exist`));
       }
 
-      const collectionId  = bookmark.collectionId;
+      const collectionId = bookmark.collectionId;
 
       const collection = await Collection.findOne({id: collectionId, owners: req.userData.id});
       if (!collection) {
         return res.status(403).json(new HttpError(403));
       }
-
+      topics = bookmark.topics;
       await bookmark.remove();
 
-      const conditions = { collectionId, 'index' : { $gt: bookmark.index } };
-      const update = { $inc: { index: -1 }};
-      const options = { multi: true };
+      const conditions = {collectionId, 'index': {$gt: bookmark.index}};
+      const update = {$inc: {index: -1}};
+      const options = {multi: true};
 
       await Bookmark.update(conditions, update, options);
 
@@ -105,10 +146,88 @@ class BookmarkController {
         .sort('index')
         .exec();
 
-      return res.json(bookmarks);
+      res.json(bookmarks);
 
-    } catch(err){
-      next(new HttpError(500, err.message))
+    } catch (err) {
+      return next(new HttpError(500, err.message))
+    }
+
+    try {
+      if (topics.length){
+        for (let topic of topics) {
+          let bm = await Bookmark.findOne({topics: topic});
+          if(!bm){
+            let topicModel = await Topic.findOne({id: topic});
+            topicModel.remove()
+          }
+        }
+      }
+    }
+    catch (err) {
+      console.log(err);
+    }
+  }
+
+  static async getBookmarksByTopics(req, res, next) {
+    const Bookmark = mongoose.models.Bookmark;
+    const Collection = mongoose.models.Collection;
+    let topics = req.body.topics;
+    let toFind = {topics: { $in : topics }};
+    if (!topics || !topics.length){
+      toFind = {}
+    }
+    try {
+      const bookmarks = await Bookmark
+        .find(toFind)
+        .sort('index')
+        .exec();
+
+      let resultArr = [];
+
+      for (let bm of bookmarks) {
+        let collection = await Collection.findOne({id: bm.collectionId, owners: req.userData.id});
+        if(collection){
+          resultArr.push(bm)
+        }
+      }
+
+      return res.json(resultArr);
+
+    } catch (err) {
+      return next(new HttpError(500, err.message))
+    }
+  }
+
+  static async getTopics(req, res, next) {
+    const Topic = mongoose.models.Topic;
+    try {
+      const topics = await Topic
+        .find({})
+        .exec();
+
+      let strArr = [];
+
+      if (topics) {
+        topics.forEach((item) => {
+          strArr.push(item.id);
+        })
+      }
+
+      return res.json(strArr);
+
+    } catch (err) {
+      return next(new HttpError(500, err.message))
+    }
+  }
+
+  static async statistics(req, res, next) {
+    let info = req.body;
+    try {
+      toStat(info);
+      return res.json({});
+
+    } catch (err) {
+      return next(new HttpError(500, err.message))
     }
   }
 }
@@ -130,6 +249,29 @@ function getVibrantColor(palette) {
   return null;
 }
 
+function recognize(hostName) {
+  if (hostName.includes('facebook') || hostName.includes('vk.com') || hostName.includes('vkontakte')
+  || hostName.includes('twitter') || hostName.includes('linkedin') || hostName.includes('tumblr')) {
+    return ['Social Network', 'Communications'];
+  }
+
+  if (hostName.includes('youtube')){
+    return ['Social Network', 'Media', 'Video'];
+  }
+
+  if (hostName.includes('.io')){
+    return ['Service', 'IT'];
+  }
+
+  if (hostName.includes('mail')){
+    return ['Mail', 'Communications'];
+  }
+
+  if (hostName.includes('medium') || hostName.includes('livejournal') || hostName.includes('pinterest')){
+    return ['Media', 'Blog'];
+  }
+}
+
 function getValidLink(link) {
   return link.indexOf('http') !== -1 ? link : 'http://' + link;
 }
@@ -144,6 +286,10 @@ function extractHostname(url) {
   const regexp = /^(?:https?:\/\/)?(?:www\.)?((?:(?!www\.|\.).)+\.[a-zA-Z0-9.]+)/;
   const res = url.match(regexp);
   return res ? res[1] : '';
+}
+
+function toStat() {
+  return;
 }
 
 module.exports = BookmarkController;

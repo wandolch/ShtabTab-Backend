@@ -17,5 +17,8 @@ router.get('/collection/:id/toggle-style', userAccess, CollectionController.togg
 
 router.post('/collection/:id/bookmark', userAccess, BookmarkController.createBookmarkByCollectionId);
 router.delete('/bookmark/:id', userAccess, BookmarkController.deleteBookmarkById);
+router.post('/bookmark/topics', userAccess, BookmarkController.getBookmarksByTopics);
+router.get('/topics', userAccess, BookmarkController.getTopics);
+router.get('/bookmark/:id/statistics', userAccess, BookmarkController.statistics);
 
 module.exports = router;
