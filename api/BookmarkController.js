@@ -8,7 +8,6 @@ class BookmarkController {
   static async createBookmarkByCollectionId(req, res, next) {
     const Bookmark = mongoose.models.Bookmark;
     const Collection = mongoose.models.Collection;
-    const Topic = mongoose.models.Topic;
 
     const collectionId = req.params.id;
     let bookmark = null;
@@ -94,18 +93,6 @@ class BookmarkController {
         }
       }
 
-
-      let savePromices = [];
-
-      for (let topic of topics) {
-        let similar = await Topic.findOne({id: topic});
-        if(!similar){
-          let model = new Topic({id: topic});
-          savePromices.push(model.save());
-        }
-      }
-
-      await Promise.all(savePromices);
       bookmark.topics = topics;
       await bookmark.save();
     }
@@ -117,7 +104,6 @@ class BookmarkController {
   static async deleteBookmarkById(req, res, next) {
     const Bookmark = mongoose.models.Bookmark;
     const Collection = mongoose.models.Collection;
-    const Topic = mongoose.models.Topic;
     const bookmarkId = req.params.id;
     let topics = null;
     try {
@@ -132,7 +118,6 @@ class BookmarkController {
       if (!collection) {
         return res.status(403).json(new HttpError(403));
       }
-      topics = bookmark.topics;
       await bookmark.remove();
 
       const conditions = {collectionId, 'index': {$gt: bookmark.index}};
@@ -150,21 +135,6 @@ class BookmarkController {
 
     } catch (err) {
       return next(new HttpError(500, err.message))
-    }
-
-    try {
-      if (topics.length){
-        for (let topic of topics) {
-          let bm = await Bookmark.findOne({topics: topic});
-          if(!bm){
-            let topicModel = await Topic.findOne({id: topic});
-            topicModel.remove()
-          }
-        }
-      }
-    }
-    catch (err) {
-      console.log(err);
     }
   }
 
@@ -199,21 +169,29 @@ class BookmarkController {
   }
 
   static async getTopics(req, res, next) {
-    const Topic = mongoose.models.Topic;
+    const Bookmark = mongoose.models.Bookmark;
+    const Collection = mongoose.models.Collection;
+    let topics = req.body.topics;
+    let toFind = {topics: { $in : topics }};
+    if (!topics || !topics.length){
+      toFind = {}
+    }
     try {
-      const topics = await Topic
-        .find({})
+      const bookmarks = await Bookmark
+        .find(toFind)
+        .sort('index')
         .exec();
 
-      let strArr = [];
+      let resultArr = [];
 
-      if (topics) {
-        topics.forEach((item) => {
-          strArr.push(item.id);
-        })
+      for (let bm of bookmarks) {
+        let collection = await Collection.findOne({id: bm.collectionId, owners: req.userData.id});
+        if(collection){
+          resultArr = [...resultArr, ...bm.topics];
+        }
       }
 
-      return res.json(strArr);
+      return res.json(resultArr);
 
     } catch (err) {
       return next(new HttpError(500, err.message))
