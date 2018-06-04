@@ -111,6 +111,31 @@ class CollectionController {
     return CollectionController.getCollections(req, res, next);
   }
 
+  static async editCollectionById(req, res, next) {
+    const Collection = mongoose.models.Collection;
+    const collectionId = req.params.id;
+    const newTitle = req.body.title;
+    if (!newTitle){
+      return res.status(400).json(new HttpError(400, `Collection title should not be empty`));
+    }
+
+    try {
+      const collection = await Collection.findOne({id: collectionId, owners: req.userData.id});
+      if (!collection) {
+        return res.status(404).json(new HttpError(404, `Collection with id ${collectionId} does not exist`));
+      }
+      collection.title = newTitle;
+      await collection.save();
+
+      return res.json(collection);
+
+    } catch(err){
+      next(new HttpError(500, err.message))
+    }
+
+    return CollectionController.getCollections(req, res, next);
+  }
+
   static async toggleStyle(req, res, next) {
     const Collection = mongoose.models.Collection;
     const collectionId = req.params.id;
