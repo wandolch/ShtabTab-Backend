@@ -191,7 +191,7 @@ class BookmarkController {
         }
       }
 
-      return res.json(resultArr);
+      return res.json([ ...new Set(resultArr) ]);
 
     } catch (err) {
       return next(new HttpError(500, err.message))
