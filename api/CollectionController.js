@@ -13,7 +13,7 @@ class CollectionController {
         return res.json(collections);
       }
       const defaultCollection = await new Collection({
-        title: 'Favorites',
+        title: 'Основные',
         index: 0,
         owners: [req.userData.id],
       }).save();
